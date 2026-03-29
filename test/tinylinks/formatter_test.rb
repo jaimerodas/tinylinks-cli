@@ -6,7 +6,7 @@ class FormatterTest < Minitest::Test
   include TestFixtures
 
   def setup
-    @fmt = Tinylinks::Formatter.new
+    @fmt = Tinylinks::Formatter.new(color: false)
   end
 
   def test_link_shows_title_url_and_id
@@ -84,5 +84,65 @@ class FormatterTest < Minitest::Test
 
     assert_includes output, "url has already been taken"
     assert_includes output, "url is invalid"
+  end
+
+  def test_link_colorizes_title_bold
+    fmt = Tinylinks::Formatter.new(color: true)
+    output = fmt.link(sample_link)
+
+    assert_includes output, "\e[1mExample [#1]\e[0m"
+  end
+
+  def test_link_colorizes_url_cyan
+    fmt = Tinylinks::Formatter.new(color: true)
+    output = fmt.link(sample_link)
+
+    assert_includes output, "\e[36mhttps://example.com\e[0m"
+  end
+
+  def test_link_colorizes_description_dim
+    fmt = Tinylinks::Formatter.new(color: true)
+    output = fmt.link(sample_link)
+
+    assert_includes output, "\e[2mAn example site\e[0m"
+  end
+
+  def test_link_colorizes_tags_green
+    fmt = Tinylinks::Formatter.new(color: true)
+    output = fmt.link(sample_link)
+
+    assert_includes output, "\e[32mruby, rails\e[0m"
+  end
+
+  def test_tags_colorizes_name_green
+    fmt = Tinylinks::Formatter.new(color: true)
+    data = {"tags" => [{"name" => "ruby", "count" => 42}]}
+    output = fmt.tags(data)
+
+    assert_includes output, "\e[32mruby\e[0m"
+  end
+
+  def test_tags_colorizes_count_dim
+    fmt = Tinylinks::Formatter.new(color: true)
+    data = {"tags" => [{"name" => "ruby", "count" => 42}]}
+    output = fmt.tags(data)
+
+    assert_includes output, "\e[2m(42)\e[0m"
+  end
+
+  def test_errors_colorizes_red
+    fmt = Tinylinks::Formatter.new(color: true)
+    data = {"errors" => {"url" => ["is invalid"]}}
+    output = fmt.errors(data)
+
+    assert_includes output, "\e[31murl is invalid\e[0m"
+  end
+
+  def test_pagination_colorizes_dim
+    fmt = Tinylinks::Formatter.new(color: true)
+    data = {"links" => [], "meta" => sample_meta}
+    output = fmt.link_list(data)
+
+    assert_includes output, "\e[2mPage 1 of 1 (1 total)\e[0m"
   end
 end

@@ -2,28 +2,32 @@
 
 module Tinylinks
   class Formatter
+    def initialize(color: false)
+      @c = Colorizer.new(enabled: color)
+    end
+
     def link(data)
       lines = []
-      lines << "#{data["title"] || "(untitled)"} [##{data["id"]}]"
-      lines << "  #{data["url"]}"
-      lines << "  #{data["description"]}" if data["description"] && !data["description"].empty?
-      lines << "  tags: #{data["tags"].join(", ")}" if data["tags"] && !data["tags"].empty?
+      lines << @c.bold("#{data["title"] || "(untitled)"} [##{data["id"]}]")
+      lines << "  #{@c.cyan(data["url"])}"
+      lines << "  #{@c.dim(data["description"])}" if data["description"] && !data["description"].empty?
+      lines << "  tags: #{@c.green(data["tags"].join(", "))}" if data["tags"] && !data["tags"].empty?
       lines.join("\n")
     end
 
     def link_list(data)
       lines = data["links"].map { |l| link(l) }
-      lines << pagination(data["meta"]) if data["meta"]
+      lines << @c.dim(pagination(data["meta"])) if data["meta"]
       lines.join("\n\n")
     end
 
     def tags(data)
-      data["tags"].map { |t| "#{t["name"]} (#{t["count"]})" }.join("\n")
+      data["tags"].map { |t| "#{@c.green(t["name"])} #{@c.dim("(#{t["count"]})")}" }.join("\n")
     end
 
     def errors(data)
       data["errors"].flat_map do |field, messages|
-        messages.map { |msg| "#{field} #{msg}" }
+        messages.map { |msg| @c.red("#{field} #{msg}") }
       end.join("\n")
     end
 

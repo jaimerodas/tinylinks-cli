@@ -203,6 +203,29 @@ class CLITest < Minitest::Test
     assert_includes output, "tinylinks #{Tinylinks::VERSION}"
   end
 
+  # --- no-color flag ---
+
+  def test_no_color_flag_produces_plain_output
+    stub_api(:get, "/links/1", body: {"link" => sample_link})
+
+    output = capture_cli("show", "1", "--no-color")
+
+    assert_includes output, "Example [#1]"
+    refute_includes output, "\e["
+  end
+
+  def test_no_color_flag_on_error_produces_plain_stderr
+    stub_api(:post, "/links", status: 422,
+      body: {"errors" => {"url" => ["is invalid"]}})
+
+    stderr = capture_stderr do
+      assert_raises(SystemExit) { capture_cli("add", "https://x.com", "--no-color") }
+    end
+
+    assert_includes stderr, "url is invalid"
+    refute_includes stderr, "\e["
+  end
+
   # --- auth required ---
 
   def test_command_without_login_shows_error
@@ -224,6 +247,15 @@ class CLITest < Minitest::Test
       $stdout = old_stdout
     end
     stdout.string
+  end
+
+  def capture_stderr
+    old_stderr = $stderr
+    $stderr = StringIO.new
+    yield
+    $stderr.string
+  ensure
+    $stderr = old_stderr
   end
 
   def stub_const(const, value)

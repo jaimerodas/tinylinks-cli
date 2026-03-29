@@ -9,6 +9,7 @@ module Tinylinks
     end
 
     class_option :help, aliases: "-h", type: :boolean, desc: "Show help for a command"
+    class_option :no_color, type: :boolean, default: false, desc: "Disable color output"
 
     no_commands do
       def invoke_command(command, *args)
@@ -19,9 +20,9 @@ module Tinylinks
         super
       rescue Client::ApiError => e
         if e.body.is_a?(Hash) && e.body["errors"]
-          say_error formatter.errors(e.body)
+          say_error error_formatter.errors(e.body)
         else
-          say_error e.message
+          say_error error_colorizer.red(e.message)
         end
         exit 1
       end
@@ -45,7 +46,7 @@ module Tinylinks
       end
       say "Login successful!"
     rescue RuntimeError => e
-      say_error "Login failed: #{e.message}"
+      say_error error_colorizer.red("Login failed: #{e.message}")
       exit 1
     end
 
@@ -96,7 +97,7 @@ module Tinylinks
       body[:tags] = options[:tags].split(",").map(&:strip) if options[:tags]
 
       if body.empty?
-        say_error "No changes specified. Use --title, --description, or --tags."
+        say_error error_colorizer.red("No changes specified. Use --title, --description, or --tags.")
         exit 1
       end
 
@@ -142,7 +143,7 @@ module Tinylinks
       @client ||= begin
         token = Auth.new.token
         unless token
-          say_error "Not logged in. Run `tinylinks login` first."
+          say_error error_colorizer.red("Not logged in. Run `tinylinks login` first.")
           exit 1
         end
         Client.new(token: token)
@@ -150,11 +151,23 @@ module Tinylinks
     end
 
     def formatter
-      @formatter ||= Formatter.new
+      @formatter ||= Formatter.new(color: color_enabled?($stdout))
+    end
+
+    def error_formatter
+      @error_formatter ||= Formatter.new(color: color_enabled?($stderr))
+    end
+
+    def error_colorizer
+      @error_colorizer ||= Colorizer.new(enabled: color_enabled?($stderr))
     end
 
     def say_error(message)
       $stderr.puts message
+    end
+
+    def color_enabled?(io)
+      !options[:no_color] && io.tty? && ENV["NO_COLOR"].nil?
     end
   end
 end
