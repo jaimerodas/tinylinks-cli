@@ -1,3 +1,4 @@
 .claude
 .nova
 *.gem
+.DS_Store

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Tinylinks
-  VERSION = "0.2.0"
+  VERSION = "0.2.1"
   BASE_URL = "https://links.pati.to"
   API_BASE = "#{BASE_URL}/api/v1"
 end

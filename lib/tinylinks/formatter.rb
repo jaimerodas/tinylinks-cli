@@ -16,12 +16,16 @@ module Tinylinks
     end
 
     def link_list(data)
+      return @c.dim("No results found") if data["links"].empty?
+
       lines = data["links"].map { |l| link(l) }
       lines << @c.dim(pagination(data["meta"])) if data["meta"]
       lines.join("\n\n")
     end
 
     def tags(data)
+      return @c.dim("No results found") if data["tags"].empty?
+
       data["tags"].map { |t| "#{@c.green(t["name"])} #{@c.dim("(#{t["count"]})")}" }.join("\n")
     end
 

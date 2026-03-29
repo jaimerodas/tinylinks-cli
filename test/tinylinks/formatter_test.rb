@@ -66,7 +66,16 @@ class FormatterTest < Minitest::Test
 
     output = @fmt.link_list(data)
 
-    assert_includes output, "Page 1 of 0 (0 total)"
+    assert_includes output, "No results found"
+    refute_includes output, "Page"
+  end
+
+  def test_tags_empty
+    data = {"tags" => []}
+
+    output = @fmt.tags(data)
+
+    assert_includes output, "No results found"
   end
 
   def test_tags_formatting
@@ -140,9 +149,17 @@ class FormatterTest < Minitest::Test
 
   def test_pagination_colorizes_dim
     fmt = Tinylinks::Formatter.new(color: true)
-    data = {"links" => [], "meta" => sample_meta}
+    data = {"links" => [sample_link], "meta" => sample_meta}
     output = fmt.link_list(data)
 
     assert_includes output, "\e[2mPage 1 of 1 (1 total)\e[0m"
+  end
+
+  def test_link_list_empty_colorizes_dim
+    fmt = Tinylinks::Formatter.new(color: true)
+    data = {"links" => [], "meta" => sample_meta("total_items" => 0, "total_pages" => 0)}
+    output = fmt.link_list(data)
+
+    assert_includes output, "\e[2mNo results found\e[0m"
   end
 end

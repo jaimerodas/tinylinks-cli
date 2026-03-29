@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    tinylinks (0.2.0)
+    tinylinks (0.2.1)
       thor (~> 1.5)
 
 GEM
@@ -50,7 +50,7 @@ CHECKSUMS
   rake (13.3.1) sha256=8c9e89d09f66a26a01264e7e3480ec0607f0c497a861ef16063604b1b08eb19c
   rexml (3.4.4) sha256=19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142
   thor (1.5.0) sha256=e3a9e55fe857e44859ce104a84675ab6e8cd59c650a49106a05f55f136425e73
-  tinylinks (0.2.0)
+  tinylinks (0.2.1)
   webmock (3.26.2) sha256=774556f2ea6371846cca68c01769b2eac0d134492d21f6d0ab5dd643965a4c90
 
 BUNDLED WITH
