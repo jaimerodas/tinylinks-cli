@@ -11,7 +11,8 @@ module Tinylinks
       lines << @c.bold("#{data["title"] || "(untitled)"} [##{data["id"]}]")
       lines << "  #{@c.cyan(data["url"])}"
       lines << "  #{@c.dim(data["description"])}" if data["description"] && !data["description"].empty?
-      lines << "  tags: #{@c.green(data["tags"].join(", "))}" if data["tags"] && !data["tags"].empty?
+      meta = meta_line(data)
+      lines << "  #{meta}" if meta
       lines.join("\n")
     end
 
@@ -36,6 +37,24 @@ module Tinylinks
     end
 
     private
+
+    def meta_line(data)
+      parts = []
+      parts << "tags: #{@c.green(data["tags"].join(", "))}" if data["tags"] && !data["tags"].empty?
+      if data.key?("visit_count") && !data["visit_count"].nil?
+        parts << @c.dim(visits_label(data["visit_count"]))
+      end
+      return if parts.empty?
+      parts.join(@c.dim(" · "))
+    end
+
+    def visits_label(count)
+      case count
+      when 0 then "never visited"
+      when 1 then "1 visit"
+      else "#{count} visits"
+      end
+    end
 
     def pagination(meta)
       "Page #{meta["page"]} of #{meta["total_pages"]} (#{meta["total_items"]} total)"

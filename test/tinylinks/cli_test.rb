@@ -58,6 +58,47 @@ class CLITest < Minitest::Test
     assert_requested(stub)
   end
 
+  def test_list_with_filter
+    stub = stub_request(:get, "#{Tinylinks::API_BASE}/links")
+      .with(query: {"filter" => "unvisited"})
+      .to_return(status: 200, body: JSON.generate({"links" => [], "meta" => sample_meta("total_items" => 0)}),
+        headers: {"Content-Type" => "application/json"})
+
+    capture_cli("list", "--filter=unvisited")
+
+    assert_requested(stub)
+  end
+
+  def test_list_with_sort
+    stub = stub_request(:get, "#{Tinylinks::API_BASE}/links")
+      .with(query: {"sort" => "most_visited"})
+      .to_return(status: 200, body: JSON.generate({"links" => [], "meta" => sample_meta("total_items" => 0)}),
+        headers: {"Content-Type" => "application/json"})
+
+    capture_cli("list", "--sort=most_visited")
+
+    assert_requested(stub)
+  end
+
+  def test_list_combines_filter_sort_and_tags
+    stub = stub_request(:get, "#{Tinylinks::API_BASE}/links")
+      .with(query: {"tags" => "ruby", "filter" => "visited", "sort" => "oldest"})
+      .to_return(status: 200, body: JSON.generate({"links" => [], "meta" => sample_meta("total_items" => 0)}),
+        headers: {"Content-Type" => "application/json"})
+
+    capture_cli("list", "--tags=ruby", "--filter=visited", "--sort=oldest")
+
+    assert_requested(stub)
+  end
+
+  def test_list_rejects_invalid_sort
+    assert_raises(SystemExit) { capture_cli("list", "--sort=bogus") }
+  end
+
+  def test_list_rejects_invalid_filter
+    assert_raises(SystemExit) { capture_cli("list", "--filter=bogus") }
+  end
+
   # --- show ---
 
   def test_show_displays_link
@@ -68,6 +109,7 @@ class CLITest < Minitest::Test
     assert_includes output, "Example [#1]"
     assert_includes output, "https://example.com"
     assert_includes output, "tags: ruby, rails"
+    assert_includes output, "3 visits"
   end
 
   def test_show_not_found

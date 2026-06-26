@@ -58,10 +58,16 @@ module Tinylinks
 
     desc "list", "List links"
     method_option :tags, type: :string, desc: "Filter by tags (comma-separated)"
+    method_option :filter, type: :string, enum: %w[visited unvisited],
+      desc: "Filter by visit status: visited or unvisited"
+    method_option :sort, type: :string, enum: %w[newest oldest most_visited least_visited],
+      desc: "Sort order: newest (default), oldest, most_visited, least_visited"
     method_option :page, type: :numeric, desc: "Page number"
     def list
       params = {}
       params[:tags] = options[:tags] if options[:tags]
+      params[:filter] = options[:filter] if options[:filter]
+      params[:sort] = options[:sort] if options[:sort]
       params[:page] = options[:page] if options[:page]
       data = client.get("/links", params)
       say formatter.link_list(data)

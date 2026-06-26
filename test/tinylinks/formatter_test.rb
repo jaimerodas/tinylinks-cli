@@ -39,13 +39,55 @@ class FormatterTest < Minitest::Test
 
     refute_includes output, "nil"
     lines = output.split("\n")
-    assert_equal 3, lines.size  # title, url, tags
+    assert_equal 3, lines.size  # title, url, tags+visits
   end
 
   def test_link_without_tags_omits_tag_line
     output = @fmt.link(sample_link("tags" => []))
 
     refute_includes output, "tags:"
+  end
+
+  def test_link_shows_tags_and_visits_on_one_line
+    output = @fmt.link(sample_link)
+
+    assert_includes output, "tags: ruby, rails · 3 visits"
+  end
+
+  def test_link_with_zero_visits_shows_never_visited
+    output = @fmt.link(sample_link("visit_count" => 0))
+
+    assert_includes output, "never visited"
+  end
+
+  def test_link_with_one_visit_is_singular
+    output = @fmt.link(sample_link("visit_count" => 1))
+
+    assert_includes output, "1 visit"
+    refute_includes output, "1 visits"
+  end
+
+  def test_link_without_tags_still_shows_visits
+    output = @fmt.link(sample_link("tags" => []))
+
+    refute_includes output, "tags:"
+    assert_includes output, "3 visits"
+  end
+
+  def test_link_without_visit_count_omits_visits
+    link = sample_link
+    link.delete("visit_count")
+    output = @fmt.link(link)
+
+    assert_includes output, "tags: ruby, rails"
+    refute_includes output, "visit"
+  end
+
+  def test_link_colorizes_visits_dim
+    fmt = Tinylinks::Formatter.new(color: true)
+    output = fmt.link(sample_link)
+
+    assert_includes output, "\e[2m3 visits\e[0m"
   end
 
   def test_link_list_formats_multiple_links
